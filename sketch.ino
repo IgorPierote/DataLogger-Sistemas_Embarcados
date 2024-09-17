@@ -6,7 +6,7 @@
 
 #define UTC_OFFSET -3
 #define DHTPIN 7
-#define DHTTYPE DHT11
+#define DHTTYPE DHT22
 #define LOG_OPTION 1
 #define SERIAL_OPTION 0
 #define BUZZER_PIN 5 // Defina o pino para o buzzer
@@ -83,7 +83,7 @@ Unit currentUnit = CELSIUS;
 
 // Configuração:
 void setup() {
-  lcd.init();                // Inicializar a LCD  
+  lcd.init();                // Inicializar a LCD   
   dht.begin();
   Serial.begin(9600); // Define a velocidade do monitor serial
   pinMode(pinoLDR, INPUT); // Define o pino que o LDR está ligado como entrada de dados
@@ -111,7 +111,7 @@ void setup() {
   digitalWrite(LED_LUZ, LOW);
 }
 
-// Programa:
+// Programa: 
 void loop() {
   DateTime now = RTC.now();
 
@@ -130,16 +130,16 @@ void loop() {
     humidity = dht.readHumidity();
     temperature = dht.readTemperature();
     ValorLDR = analogRead(pinoLDR); // Faz a leitura do sensor, em um valor que pode variar de 0 a 1023
-    IntensidadeLuz =map(ValorLDR, 44, 937, 0, 100); // Converte o valor para uma escala de 0 a 100
+    IntensidadeLuz = map(ValorLDR, 0, 1023, 0, 100); // Converte o valor para uma escala de 0 a 100
 
-        if (temperature < trigger_t_min || temperature > trigger_t_max ||
-        humidity < trigger_u_min || humidity > trigger_u_max ||
+        if (temperature < trigger_t_min || temperature > trigger_t_max || 
+        humidity < trigger_u_min || humidity > trigger_u_max || 
         IntensidadeLuz < trigger_l_min || IntensidadeLuz > trigger_l_max) {
           // Salva os dados na EEPROM
             saveLog(now, temperature, humidity, IntensidadeLuz);
               if (LOG_OPTION) get_log();
         }
-   
+    
 
   }
 
@@ -215,7 +215,7 @@ void verificaLimites() {
   float temperature = dht.readTemperature();
   float humidity = dht.readHumidity();
   ValorLDR = analogRead(pinoLDR); // Faz a leitura do sensor, em um valor que pode variar de 0 a 1023
-  IntensidadeLuz = map(ValorLDR, 44, 937, 0, 100); // Converte o valor para uma escala de 0 a 100
+  IntensidadeLuz = map(ValorLDR, 0, 1023, 0, 100); // Converte o valor para uma escala de 0 a 100
 
   // Verifica os gatilhos de temperatura
   if (temperature < trigger_t_min || temperature > trigger_t_max) {
@@ -243,7 +243,6 @@ void verificaLimites() {
 }
 
 void MostraUmidadeTemperatura() {
-  lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Umidade(%):");
   lcd.print(humidity);
@@ -274,22 +273,19 @@ const char* getUnitString() {
 }
 
 void mostraLuz() {
-  lcd.clear();
-  verificaLimites();
   ValorLDR = analogRead(pinoLDR); // Faz a leitura do sensor, em um valor que pode variar de 0 a 1023
-  IntensidadeLuz = map(ValorLDR, 44, 937, 0, 100); // Converte o valor para uma escala de 0 a 100
+  IntensidadeLuz = map(ValorLDR, 0, 1023, 0, 100); // Converte o valor para uma escala de 0 a 100
 
-
+  verificaLimites();
 
   lcd.setCursor(0, 0);
   lcd.print("Luz 0-1023= ");
-
   lcd.print(ValorLDR);
 
   lcd.setCursor(0, 1);
   lcd.print("Luz % = ");
   lcd.print(IntensidadeLuz);
-  lcd.print("%   "); // Adicionado espaços extras para limpar possíveis caracteres residuais
+  lcd.print("%");
 
   // Desenhar a figura dependendo da intensidade da luz
   lcd.setCursor(14, 1);
